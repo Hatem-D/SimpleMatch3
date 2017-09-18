@@ -18,6 +18,7 @@ public class LevelController : MonoBehaviour {
     delegate void UpdateFunctionPtr();
     UpdateFunctionPtr doUpdateStuff;
 
+    LevelRule myRule;
     
     public GameObject levelTextContainer;
     TextMesh levelText;
@@ -25,7 +26,7 @@ public class LevelController : MonoBehaviour {
     TextMesh goalsText;
 	public GameObject starsUIPrefab;
     public GameObject movesTextContainer;
-    TextMesh movesText;
+    TextMesh scoreText;
 	public GameObject movesUIPrefab;
 
     public LevelBlocksController myBlock;
@@ -38,9 +39,16 @@ public class LevelController : MonoBehaviour {
     public int objectiveStars = 0;//player's previous best stars score will be used to send a save command at gameover
     public int movesAboveParPerStar = 1;
 
+    bool comboStart = false;
     int moves;
     int lastCombo = 0;
-    int bestCombo = 0;
+    int currentComboChain = 0;
+    int lastColorType = 0;
+    Color lastColor;
+    [HideInInspector]
+    public int bestChain = 0;
+    [HideInInspector]
+    public int bestCombo = 0;
     GameObject starsHolder;
     Vector3 starsFinalPosition;
 
@@ -54,9 +62,10 @@ public class LevelController : MonoBehaviour {
         set
         {
             moves = value;
-            UpdateStars();
-            UpdateMovesText();
-            
+            //UpdateStars();            
+            UpdateScore();
+            UpdateScoreText();
+            myRule.updateStars();
         }
     }
 
@@ -71,17 +80,36 @@ public class LevelController : MonoBehaviour {
         set
         {
             if (value < 0) stars = 0;
-            else stars = value;
+            else
+            {
+                //if (stars != value) Debug.Log("Modif de stars");
+                stars = value;
+            }
+
             UpdategoalsText();
         }
     }
 
+    public int CurrentComboChain
+    {
+        get
+        {
+            return currentComboChain;
+        }
+
+        set
+        {
+            currentComboChain = value;
+            if (currentComboChain > bestChain) bestChain = currentComboChain;
+        }
+    }
     
 
     void Awake()
     {
         gemList = new List<GemController>();
-        
+        myRule = gameObject.GetComponent<LevelRule>();
+        //Debug.Log("my rule : " + myRule);
     }
 
     void Start()
@@ -89,10 +117,10 @@ public class LevelController : MonoBehaviour {
         gemClick = WaitClick;
         gemDeath = GemDied;
         doUpdateStuff += WaitForStart;
-                
+        
         levelText = levelTextContainer.GetComponent<TextMesh>();
         goalsText = goalsTextContainer.GetComponent<TextMesh>();
-        movesText = movesTextContainer.GetComponent<TextMesh>();
+        scoreText = movesTextContainer.GetComponent<TextMesh>();
         InitStars();
         InitMoves();
         Stars = startingStars;
@@ -100,19 +128,19 @@ public class LevelController : MonoBehaviour {
         UpdateLevelText("");
         
         StartCoroutine("CheckHighestCube");
+        PauseGame();
+        //ShowLevelGoal();
     }
 
 	void InitStars(){
 		if (starsUIPrefab != null) {
 
-            
-
             starsHolder = new GameObject("StarsHolder");
             starsHolder.transform.SetParent(gameObject.transform);
-            starsHolder.transform.position = goalsText.transform.position;
+            starsHolder.transform.position = goalsText.transform.position;            
 
-			levelUIStars = new List<GameObject> ();
-			for (int i = 0; i < startingStars; i++) {
+            levelUIStars = new List<GameObject> ();
+			for (int i = 0; i < 3; i++) {
                 levelUIStars.Add(GameObject.Instantiate(starsUIPrefab));
                 levelUIStars[i].transform.SetParent(gameObject.transform);
                 levelUIStars[i].transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
@@ -132,7 +160,7 @@ public class LevelController : MonoBehaviour {
                 levelTextContainer.transform.position.y - levelUIStars[0].GetComponent<MeshRenderer>().bounds.size.y,
                 levelTextContainer.transform.position.z);
 
-            Debug.Log(starsFinalPosition);
+            //Debug.Log(starsFinalPosition);
         }
 	}
 
@@ -164,7 +192,7 @@ public class LevelController : MonoBehaviour {
                 levelUIMoves.Add(GameObject.Instantiate(movesUIPrefab));
                 levelUIMoves[i].transform.SetParent(gameObject.transform);
                 levelUIMoves[i].transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                levelUIMoves[i].transform.position = movesText.transform.position;
+                levelUIMoves[i].transform.position = scoreText.transform.position;
                 levelUIMoves[i].transform.position = new Vector3(levelUIMoves[i].transform.position.x + (i * levelUIMoves[i].GetComponent<MeshRenderer>().bounds.size.x),
                 levelUIMoves[i].transform.position.y, levelUIMoves[i].transform.position.z);
             }
@@ -185,17 +213,21 @@ public class LevelController : MonoBehaviour {
         {
             doUpdateStuff += MonitorLevelsVelocity;
             doUpdateStuff -= WaitForStart;
+            Debug.Log("rank : " + myRank);
         }
     }
 
     public void GemClicked(GemController oldGem) {
         //Debug.Log("Clicked : " + oldGem.name);
-
+        //Debug.Log("last combo : " + lastCombo);
+        
         oldGem.raycasted = true;//mark as part of the gems to destroy
         gemClick = WaitClick;//send clicks to waiting function while monitoring velocity        
-        lastCombo = 1;
+        //lastCombo = 1;
+        comboStart = true;
         oldGem.GetMeAndMySisters();//destroy gems of the same color        
         doUpdateStuff += MonitorLevelsVelocity;        
+        
         Moves++;
     }
 
@@ -203,8 +235,6 @@ public class LevelController : MonoBehaviour {
     {
         gemList.Add(gem);
         gemListLastCount = gemList.Count;
-        
-        //Debug.Log(gemList[0].transform.position.y + " " + gemList[gemList.Count - 1].transform.position.y);
     }
 
     IEnumerator CheckHighestCube()
@@ -221,7 +251,7 @@ public class LevelController : MonoBehaviour {
 
     public void GemDied(GameObject gem)
     {
-        if (lastCombo > 0) { lastCombo++; }
+        if (comboStart) { lastCombo++; }
         
         gemList.Remove(gem.GetComponent<GemController>());        
         gem.GetComponent<GemController>().Destroy();
@@ -235,7 +265,7 @@ public class LevelController : MonoBehaviour {
         
         if (gemList.Count > 0)
         {
-            if (gemList[gemList.Count - 1].gameObject.GetComponent<Rigidbody>().velocity.y >= 0.0f)
+            if (gemList[gemList.Count - 1].gameObject.GetComponent<Rigidbody>().velocity.y == 0.0f)
             {
                 gemClick = GemClicked;
                 doUpdateStuff -= MonitorLevelsVelocity;
@@ -244,7 +274,7 @@ public class LevelController : MonoBehaviour {
         }
         else
         {
-            UpdateLevelText("\r\n Level cleared ");
+            UpdateLevelText("\r\n Level done ");
             
             if (Stars > objectiveStars)
             {
@@ -253,6 +283,7 @@ public class LevelController : MonoBehaviour {
             doUpdateStuff = null;
             doUpdateStuff += CenterStars;
             ResetLastCombo();
+            myBlock.ShowNextLevelBtn();
         }
     }
 
@@ -261,51 +292,63 @@ public class LevelController : MonoBehaviour {
         levelText.text = txt;
     }
 
-    void UpdateMovesText()
+    void UpdateScoreText()
     {
-		if (movesText != null) {
-            movesText.text = "\r\nMoves : " + Moves;
-            if (bestCombo > 0) movesText.text += "\r\nBest Combo : " + bestCombo;
-		}
-    }
-
-    void UpdateStars()
-    {
-        if (Moves > levelPar)
-        {
-            int starsToSub = (Moves - levelPar);
-            if (movesAboveParPerStar == 1 ) Stars = Stars - 1;
-            else if (movesAboveParPerStar > 1)
-            {
-                starsToSub = starsToSub / movesAboveParPerStar;
-                Stars = Stars - starsToSub;
-            }
+		if (scoreText != null) {
+            scoreText.text = myRule.getScoreText();
         }
     }
 
     void UpdategoalsText()
     {
-		if (goalsText != null) {
-            goalsText.text = "Goal : " + levelPar + " moves";
-		}
+        if (goalsText != null) {
+            goalsText.text = myRule.getGoalText();
+        }
 		if (levelUIStars.Count > 0) {
-			for (int i = 0; i < levelUIStars.Count; i++)
+            for (int i = 0; i < levelUIStars.Count; i++)
             {
+                AnimationScript starScript = levelUIStars[i].GetComponent<AnimationScript>();
                 if (i < Stars) {
-                    levelUIStars[i].GetComponent<AnimationScript>().SetFilled();
-                }else { levelUIStars[i].GetComponent<AnimationScript>().SetBlank(); }
-
+                    starScript.SetFilled();
+                    if (!starScript.isScaling)
+                    {
+                        starScript.isScaling = true;
+                        levelUIStars[i].transform.position = new Vector3(levelUIStars[i].transform.position.x,
+                                                        levelUIStars[i].transform.position.y - 0.15f, levelUIStars[i].transform.position.z);
+                    }
+                    
+                    }
+                else { starScript.SetBlank(); }
             }
 		}
+    }
+    
+    void UpdateScore()
+    {
+        if (lastCombo > bestCombo) bestCombo = lastCombo;
+        if (lastCombo > 1)
+        {
+            CurrentComboChain++;
+            //Debug.Log("last combo : " + lastCombo);
+        }
+        else CurrentComboChain = 0;
     }
 
     void ResetLastCombo()
     {
-        if (lastCombo > bestCombo) bestCombo = lastCombo;
         lastCombo = 0;
-        UpdateMovesText();
+        comboStart = false;
+        UpdateScoreText();
     }
     
+    public void PauseGame()
+    {
+        Time.timeScale = 0.0f;
+    }
 
+    public void UnpauseGame()
+    {
+        Time.timeScale = 1.0f;
+    }
 
 }

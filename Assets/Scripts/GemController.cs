@@ -97,7 +97,7 @@ public class GemController : MonoBehaviour {
 
     public void OnGemClicked()
     {
-        if (gemClicked != null) { 
+        if (gemClicked != null && gameObject.GetComponent<Rigidbody>().velocity.y < 0.2f && gameObject.GetComponent<Rigidbody>().velocity.y > -0.2f) { 
             gemClicked();
         }
     }

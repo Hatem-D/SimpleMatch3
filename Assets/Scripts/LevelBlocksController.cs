@@ -16,6 +16,9 @@ public class LevelBlocksController : MonoBehaviour {
 
     public GameObject inLevelUI;
     public GameObject levelSelectUI;
+    public GameObject resumeGameBtn;
+    public GameObject nextLevelBtn;
+    public Text levelTextContainer;
 
     public GameObject sphereFX;
     Material sphereBaseMat;
@@ -97,7 +100,7 @@ public class LevelBlocksController : MonoBehaviour {
     public void ResetActiveLevel()
     {
         DestroyActiveLevel();
-        GenerateLevel(currentPrefab);
+        SelectLevel(activeLevel.myRank + 1);
     }
 
     void DestroyActiveLevel()
@@ -125,6 +128,22 @@ public class LevelBlocksController : MonoBehaviour {
         Save(LevelRankToString());
     }
     
+    public void ShowNextLevelBtn()
+    {
+        if (activeLevel.myRank + 1 < levelPrefabs.Count) nextLevelBtn.SetActive(true);
+    }
+
+    public void HideNextLevelBtn()
+    {
+        nextLevelBtn.SetActive(false);
+    }
+
+    public void LoadNextLevel()
+    {
+        DestroyActiveLevel();
+        SelectLevel(activeLevel.myRank+2);
+    }
+
     string LevelRankToString()
     {
         string result = "";
@@ -143,12 +162,17 @@ public class LevelBlocksController : MonoBehaviour {
         activeLevel.myRank = levelInList;
         activeLevel.objectiveStars = levelStars[levelInList];
         activeLevel.myBlock = this;
+        levelTextContainer.text = temp.GetComponent<LevelRule>().getRuleText();
+
+        resumeGameBtn.SetActive(true);
+        HideNextLevelBtn();
     }
 
     public void BackToLevelSelect()
     {
         DestroyActiveLevel();
         LoadFile();
+        ResumeGame();//unpause game
         ActivateLevelSelectUI();
         if (updateUIStars != null) updateUIStars();
     }
@@ -171,6 +195,12 @@ public class LevelBlocksController : MonoBehaviour {
     public void BackToMenu()
     {
         SceneManager.LoadScene("FacebookMenu");
+    }
+
+    public void ResumeGame()
+    {
+        Time.timeScale = 1.0f;
+        resumeGameBtn.SetActive(false);
     }
 
     void LoadFile()
