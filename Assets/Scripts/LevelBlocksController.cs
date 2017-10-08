@@ -6,8 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class LevelBlocksController : MonoBehaviour {
-    
-    public List<LevelController> levelPrefabs;
+
+    public List<LevelController> levelGroup1;
+    List<LevelController> levelPrefabs;
     public List<GameObject> levelPages;
     public List<int> levelStars;
 
@@ -35,7 +36,7 @@ public class LevelBlocksController : MonoBehaviour {
     // Use this for initialization
     void Awake () {
         ActivateLevelSelectUI();
-
+        levelPrefabs = levelGroup1;
         if (Application.platform == RuntimePlatform.Android)
         {
             fileName = Application.persistentDataPath;

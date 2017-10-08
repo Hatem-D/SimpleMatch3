@@ -54,30 +54,15 @@ public class LevelRule : MonoBehaviour {
 
     public void UpdateStarsMovesRule()
     {
-        if (threeStars == 0) { 
-            if (myLevel.Moves > myLevel.levelPar)
+        if (myLevel.Moves < threeStars) { myLevel.Stars = 3; }
+        else {
+            if (myLevel.Moves < twoStars) { myLevel.Stars = 2; }
+            else
             {
-                int starsToSub = (myLevel.Moves - myLevel.levelPar);
-                if (myLevel.movesAboveParPerStar == 1) myLevel.Stars = myLevel.Stars - 1;
-                else if (myLevel.movesAboveParPerStar > 1)
-                {
-                    starsToSub = starsToSub / myLevel.movesAboveParPerStar;
-                    myLevel.Stars = myLevel.Stars - starsToSub;
-                }
+                if (myLevel.Moves < oneStar) { myLevel.Stars = 1; }
+                else { myLevel.Stars = 0; }
             }
-        }
-        else
-        {
-            if (myLevel.Moves < threeStars) { myLevel.Stars = 3; }
-            else {
-                if (myLevel.Moves < twoStars) { myLevel.Stars = 2; }
-                else
-                {
-                    if (myLevel.Moves < oneStar) { myLevel.Stars = 1; }
-                    else { myLevel.Stars = 0; }
-                }
-            }            
-        }
+        }            
     }
 
     public void UpdateStarsComboRule()
@@ -185,11 +170,11 @@ public class LevelRule : MonoBehaviour {
 
     string GetGoalTextMoves()
     {
-        if (myLevel.Moves < threeStars)
+        if (myLevel.Moves <= threeStars)
             return ("Goal : " + threeStars + " moves");
-        if (myLevel.Moves < twoStars)
+        if (myLevel.Moves <= twoStars)
             return ("Goal : " + twoStars + " moves");
-        if (myLevel.Moves < oneStar)
+        if (myLevel.Moves <= oneStar)
             return ("Goal : " + oneStar + " moves");
         return ("No stars left !");
     }
