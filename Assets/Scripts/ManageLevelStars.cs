@@ -11,10 +11,10 @@ public class ManageLevelStars : MonoBehaviour {
 
     LevelBlocksController lvlBlocks;
 
-    void Start()
+    void Awake()
     {
         lvlBlocks = GameObject.FindObjectOfType<LevelBlocksController>();
-        StartCoroutine("WaitForFileLoad");
+        //StartCoroutine("WaitForFileLoad");
         lvlBlocks.updateUIStars += SetFilledStars;
     }
 
@@ -25,15 +25,21 @@ public class ManageLevelStars : MonoBehaviour {
         SetFilledStars();
     }
 
-    public void SetFilledStars()
+    public void SetFilledStars()//And Blanks
     {
-        int starsToFill = lvlBlocks.levelStars[myRank];
-        //Debug.Log("Setting filled starts : " + starsToFill);
+        int starsToFill = lvlBlocks.levelStars[myRank + lvlBlocks.rankGroupOffset];
+        //Debug.Log(gameObject.name + " : " + "Stars : " + starsToFill + " Rank : " + myRank + " Offset : " + lvlBlocks.rankGroupOffset);
+
         if (starsToFill <= myStars.Count)
         {
             for (int i = 0; i < starsToFill; i++)
             {
 				myStars[i].GetComponent<AnimationScript>().SetFilled();
+                Debug.Log("Filling");
+            }
+            for (int i = starsToFill; i < myStars.Count; i++)
+            {
+                myStars[i].GetComponent<AnimationScript>().SetBlank();
             }
         }
         else

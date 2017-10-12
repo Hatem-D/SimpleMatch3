@@ -8,13 +8,18 @@ using UnityEngine.SceneManagement;
 public class LevelBlocksController : MonoBehaviour {
 
     public List<LevelController> levelGroup1;
+    public List<LevelController> levelGroup2;
+    public List<LevelController> levelGroup3;
+
     List<LevelController> levelPrefabs;
     public List<GameObject> levelPages;
     public List<int> levelStars;
 
     int currentPrefab = 1;
     int currentPage = 0;
+    public int rankGroupOffset = 0;
 
+    public GameObject groupSelectUI;
     public GameObject inLevelUI;
     public GameObject levelSelectUI;
     public GameObject resumeGameBtn;
@@ -35,7 +40,7 @@ public class LevelBlocksController : MonoBehaviour {
 
     // Use this for initialization
     void Awake () {
-        ActivateLevelSelectUI();
+        ActivateGroupSelectUI();
         levelPrefabs = levelGroup1;
         if (Application.platform == RuntimePlatform.Android)
         {
@@ -116,7 +121,16 @@ public class LevelBlocksController : MonoBehaviour {
     void InitStars()
     {
         levelStars = new List<int>();
-        foreach(LevelController level in levelPrefabs)
+
+        foreach(LevelController level in levelGroup1)
+        {
+            levelStars.Add(0);
+        }
+        foreach (LevelController level in levelGroup2)
+        {
+            levelStars.Add(0);
+        }
+        foreach (LevelController level in levelGroup3)
         {
             levelStars.Add(0);
         }
@@ -124,9 +138,9 @@ public class LevelBlocksController : MonoBehaviour {
 
     public void LevelUpdateStars(int levelRank, int stars)
     {
-        levelStars[levelRank] = stars;
+        levelStars[levelRank + rankGroupOffset] = stars;
         ResetFile();
-        Save(LevelRankToString());
+        Save(LevelRankToString());        
     }
     
     public void ShowNextLevelBtn()
@@ -178,10 +192,17 @@ public class LevelBlocksController : MonoBehaviour {
         if (updateUIStars != null) updateUIStars();
     }
 
+    public void ActivateGroupSelectUI()
+    {
+        levelSelectUI.SetActive(false);
+
+        groupSelectUI.SetActive(true);
+    }
+
     public void ActivateLevelSelectUI()
     {
         inLevelUI.SetActive(false);
-        
+        groupSelectUI.SetActive(false);
         
         levelSelectUI.SetActive(true);
     }
@@ -191,6 +212,29 @@ public class LevelBlocksController : MonoBehaviour {
         levelSelectUI.SetActive(false);
 
         inLevelUI.SetActive(true);
+    }
+
+    public void SelectLevelsGroup(int group)
+    {
+        Debug.Log("Group : " + group);
+        ActivateLevelSelectUI();
+        switch (group)
+        {
+            case 2:
+                levelPrefabs = levelGroup2;
+                rankGroupOffset = levelGroup2.Count;
+                break;
+            case 3:
+                levelPrefabs = levelGroup3;
+                rankGroupOffset = levelGroup2.Count + levelGroup3.Count;
+                break;
+            case 1:
+            default:
+                levelPrefabs = levelGroup1;
+                rankGroupOffset = 0;
+                break;
+        }
+        if (updateUIStars != null) updateUIStars();
     }
 
     public void BackToMenu()
@@ -203,6 +247,10 @@ public class LevelBlocksController : MonoBehaviour {
         Time.timeScale = 1.0f;
         resumeGameBtn.SetActive(false);
     }
+
+   
+
+    
 
     void LoadFile()
     {
@@ -308,14 +356,24 @@ public class LevelBlocksController : MonoBehaviour {
 
     string FirstSaveString()
     {
-        string result = "";
+        /*string result = "";
 
         foreach (LevelController level in levelPrefabs)
         {
             result += "0;";
         }
 
-        return (result);
+        return (result);*/
+
+        string result = "";
+        int len = levelGroup1.Count + levelGroup2.Count + levelGroup3.Count;
+
+        for (int i = 0; i < len; i++)
+        {
+            result += "0;";
+        }
+
+        return result;
     }
 
     void LoadPresetsFromFileString(string info)

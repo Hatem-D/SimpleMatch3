@@ -54,12 +54,12 @@ public class LevelRule : MonoBehaviour {
 
     public void UpdateStarsMovesRule()
     {
-        if (myLevel.Moves < threeStars) { myLevel.Stars = 3; }
+        if (myLevel.Moves <= threeStars) { myLevel.Stars = 3; }
         else {
-            if (myLevel.Moves < twoStars) { myLevel.Stars = 2; }
+            if (myLevel.Moves <= twoStars) { myLevel.Stars = 2; }
             else
             {
-                if (myLevel.Moves < oneStar) { myLevel.Stars = 1; }
+                if (myLevel.Moves <= oneStar) { myLevel.Stars = 1; }
                 else { myLevel.Stars = 0; }
             }
         }            

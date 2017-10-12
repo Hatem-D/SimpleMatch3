@@ -309,6 +309,7 @@ public class LevelController : MonoBehaviour {
             {
                 AnimationScript starScript = levelUIStars[i].GetComponent<AnimationScript>();
                 if (i < Stars) {
+                    //Debug.Log("i < Stars ; Stars = " + Stars);
                     starScript.SetFilled();
                     if (!starScript.isScaling)
                     {
