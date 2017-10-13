@@ -36,15 +36,17 @@ public class LevelController : MonoBehaviour {
     public int levelPar;
     public int startingStars = 3;
     [HideInInspector]
-    public int objectiveStars = 0;//player's previous best stars score will be used to send a save command at gameover
+    public int objectiveStars = 0; //player's previous best stars score will be used to send a save command at gameover
     public int movesAboveParPerStar = 1;
 
     bool comboStart = false;
     int moves;
     int lastCombo = 0;
     int currentComboChain = 0;
-    int lastColorType = 0;
-    Color lastColor;
+    [HideInInspector]
+    public int currentColorChain = 0;
+    Color lastColor = Color.clear;
+    Color newColor = Color.black;
     [HideInInspector]
     public int bestChain = 0;
     [HideInInspector]
@@ -99,7 +101,16 @@ public class LevelController : MonoBehaviour {
 
         set
         {
-            currentComboChain = value;
+            int newValue = value;
+            if (lastColor == newColor)
+            {
+                currentColorChain++;
+                newValue += currentColorChain;
+            }else
+            {
+                currentColorChain = 0;
+            }
+            currentComboChain = newValue;
             if (currentComboChain > bestChain) bestChain = currentComboChain;
         }
     }
@@ -223,11 +234,14 @@ public class LevelController : MonoBehaviour {
         
         oldGem.raycasted = true;//mark as part of the gems to destroy
         gemClick = WaitClick;//send clicks to waiting function while monitoring velocity        
-        //lastCombo = 1;
+        
         comboStart = true;
         oldGem.GetMeAndMySisters();//destroy gems of the same color        
-        doUpdateStuff += MonitorLevelsVelocity;        
-        
+        doUpdateStuff += MonitorLevelsVelocity;
+
+        lastColor = newColor;
+        newColor = oldGem.GetComponent<MeshRenderer>().material.color;
+
         Moves++;
     }
 

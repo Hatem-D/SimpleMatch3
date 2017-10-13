@@ -156,7 +156,7 @@ public class LevelRule : MonoBehaviour {
 
     string GetRuleScoreTextComboChain()
     {
-        return ("Current Chain : "+ myLevel.CurrentComboChain + "\r\nBest Chain : " + myLevel.bestChain);
+        return ("Current Chain : "+ myLevel.CurrentComboChain + "\r\nColor Chain : " + myLevel.currentColorChain + "\r\nBest Chain : " + myLevel.bestChain);
     }
 
     #endregion
@@ -191,10 +191,10 @@ public class LevelRule : MonoBehaviour {
     string GetGoalTextComboChain()
     {
         if (myLevel.bestChain < oneStar)
-            return ("Goal : " + oneStar + " combos chained");
+            return ("Next goal : " + oneStar + " combos chained");
         if (myLevel.bestChain < twoStars)
-            return ("Goal : " + twoStars + " combos chained");
-        return ("Goal : " + threeStars + " combos chained");
+            return ("Next goal : " + twoStars + " combos chained");
+        return ("Next goal : " + threeStars + " combos chained");
     }
 
     #endregion
