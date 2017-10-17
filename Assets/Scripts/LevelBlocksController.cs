@@ -92,6 +92,7 @@ public class LevelBlocksController : MonoBehaviour {
         levelPages[currentPage].SetActive(false);
         currentPage = newPage;
         levelPages[currentPage].SetActive(true);
+        if (updateUIStars != null) updateUIStars();
     }
     public void SelectLevel(int level)
     {
@@ -204,7 +205,7 @@ public class LevelBlocksController : MonoBehaviour {
         inLevelUI.SetActive(false);
         groupSelectUI.SetActive(false);
         
-        levelSelectUI.SetActive(true);
+        levelSelectUI.SetActive(true);        
     }
 
     public void ActivateInLevelUI()
@@ -216,8 +217,9 @@ public class LevelBlocksController : MonoBehaviour {
 
     public void SelectLevelsGroup(int group)
     {
-        Debug.Log("Group : " + group);
+        //Debug.Log("Group : " + group);
         ActivateLevelSelectUI();
+        SetCurrentPage(0);
         switch (group)
         {
             case 2:

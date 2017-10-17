@@ -35,11 +35,12 @@ public class ManageLevelStars : MonoBehaviour {
             for (int i = 0; i < starsToFill; i++)
             {
 				myStars[i].GetComponent<AnimationScript>().SetFilled();
-                Debug.Log("Filling");
+                //Debug.Log("Filling");
             }
             for (int i = starsToFill; i < myStars.Count; i++)
             {
                 myStars[i].GetComponent<AnimationScript>().SetBlank();
+                //Debug.Log("Blanking");
             }
         }
         else
